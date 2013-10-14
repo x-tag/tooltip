@@ -1,7 +1,7 @@
 {
   "name": "ToolTip",
   "tagName": "x-tooltip",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "author": "Leon Zhang",
   "description": "Content callout that appears in current context to point at an element and is associated with a triggering element and interaction-style in the underlying content",
   "demo": "demo/testpage.html",
