@@ -1267,6 +1267,9 @@
             // visibility
             xtag.skipTransition(tooltip, function(){
                 _positionTooltip(tooltip, triggerElem, targetOrient);
+                // set tooltip force-display to prep tooltip for animation by
+                // turning off forced hiding CSS keeping the tooltip at 0px,0px
+                _forceDisplay(tooltip);
                 return _readyToShowFn;
             });
         }
