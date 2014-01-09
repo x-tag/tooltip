@@ -1,4 +1,4 @@
-(function(){
+(function () {
     // a data map of the tooltip orientation type to the type of direction the
     // tooltip arrow should take as a result
     var TIP_ORIENT_ARROW_DIR_MAP = {
@@ -25,7 +25,7 @@
     *   utility function to simply return if the given orientation is
     *   one listed in the top data map
     **/
-    function isValidOrientation(orient){
+    function isValidOrientation (orient) {
         return orient in TIP_ORIENT_ARROW_DIR_MAP;
     }
 
@@ -36,7 +36,7 @@
     returns the rectangle of the current window viewport, relative to the
     document
     **/
-    function getWindowViewport(){
+    function getWindowViewport () {
         var docElem = document.documentElement;
         var rect = {
             left: (docElem.scrollLeft || document.body.scrollLeft || 0),
@@ -59,7 +59,7 @@
     by default, returned coordinates already account for any CSS transform
     scaling on the given element
     **/
-    function getRect(el){
+    function getRect (el) {
         var rect = el.getBoundingClientRect();
         var viewport = getWindowViewport();
         var docScrollLeft = viewport.left;
@@ -76,7 +76,7 @@
 
     // return the scaling difference between the raw size and the transformed
     // size of the element
-    function getScale(el, rect){
+    function getScale (el, rect) {
         // the raw offset values (without accounting for css transform)
         rect = (rect !== undefined) ? rect : getRect(el);
         return {
@@ -88,10 +88,9 @@
     // returns a rectangle representing the intersection of the two given
     // rectangles (assuming that they use the same coordinate context)
     // returns null if no intersection is available
-    function getRectIntersection(rectA, rectB){
-        if(rectA.right < rectB.left || rectB.right < rectA.left ||
-           rectA.bottom < rectB.top || rectB.bottom < rectA.top)
-        {
+    function getRectIntersection (rectA, rectB) {
+        if (rectA.right < rectB.left || rectB.right < rectA.left ||
+           rectA.bottom < rectB.top || rectB.bottom < rectA.top) {
             return null;
         }
         var intersection = {
@@ -102,7 +101,7 @@
         };
         intersection.width = intersection.right - intersection.left;
         intersection.height = intersection.bottom - intersection.top;
-        if(intersection.width < 0 || intersection.height < 0){
+        if (intersection.width < 0 || intersection.height < 0) {
              return null;
         }
         return intersection;
@@ -123,7 +122,7 @@
     *   listenerFn              a callback function to bind/unbind for the
     *                           given event on the given element
     **/
-    function CachedListener(elem, eventType, listenerFn){
+    function CachedListener (elem, eventType, listenerFn) {
         this.eventType = eventType;
         this.listenerFn = listenerFn;
         this.elem = elem;
@@ -135,8 +134,8 @@
     *
     *   binds the event listener as described by the struct
     **/
-    CachedListener.prototype.attachListener = function(){
-        if(!this._attachedFn){
+    CachedListener.prototype.attachListener = function () {
+        if (!this._attachedFn) {
             this._attachedFn = xtag.addEvent(this.elem, this.eventType,
                                              this.listenerFn);
         }
@@ -147,8 +146,8 @@
     *
     *   unbinds the event listener as described by the struct
     **/
-    CachedListener.prototype.removeListener = function(){
-        if(this._attachedFn){
+    CachedListener.prototype.removeListener = function () {
+        if (this._attachedFn) {
             xtag.removeEvent(this.elem, this.eventType, this._attachedFn);
             this._attachedFn = null;
         }
@@ -166,24 +165,23 @@
     *     eventType                 the literal name of the event to listen for
     *                               ie: "click", not "click:delegate(foo)"
     **/
-    function OuterTriggerEventStruct(eventType){
+    function OuterTriggerEventStruct (eventType) {
         this._cachedListener = null;
         this._tooltips = [];
 
         var struct = this;
         // set up the function that will be attached to the body to handle
         // dismissal of tooltips
-        var outerTriggerListener = function(e){
-            struct._tooltips.forEach(function(tooltip){
+        var outerTriggerListener = function (e) {
+            struct._tooltips.forEach(function (tooltip) {
                 // only dismiss the tooltip if:
                 // - we have not flagged this outer trigger as skipped
                 // - the tooltip is even dismissable by outer triggers
                 // - we are not triggering inside the tooltip itself
-                if((!tooltip.xtag._skipOuterClick) &&
+                if ((!tooltip.xtag._skipOuterClick) &&
                    tooltip.hasAttribute("visible") &&
                    (!tooltip.ignoreOuterTrigger) &&
-                   (!hasParentNode(e.target, tooltip)))
-                {
+                   (!hasParentNode(e.target, tooltip))) {
                     _hideTooltip(tooltip);
                 }
                 tooltip.xtag._skipOuterClick = false;
@@ -199,7 +197,7 @@
     /** OuterTriggerEventStruct.destroy
     *  unbinds the maintained cached listener and removes internal references
     **/
-    OuterTriggerEventStruct.prototype.destroy = function(){
+    OuterTriggerEventStruct.prototype.destroy = function () {
         this._cachedListener.removeListener();
         this._cachedListener = null;
         this._tooltips = null;
@@ -209,7 +207,7 @@
     *
     * determines if this struct is responsible for handling the given tooltip
     **/
-    OuterTriggerEventStruct.prototype.containsTooltip = function(tooltip){
+    OuterTriggerEventStruct.prototype.containsTooltip = function (tooltip) {
         return this._tooltips.indexOf(tooltip) !== -1;
     };
 
@@ -218,8 +216,8 @@
     * adds the given toolip to the list of tooltips this struct is
     * responsible for
     **/
-    OuterTriggerEventStruct.prototype.addTooltip = function(tooltip){
-        if(!this.containsTooltip(tooltip)){
+    OuterTriggerEventStruct.prototype.addTooltip = function (tooltip) {
+        if (!this.containsTooltip(tooltip)) {
             this._tooltips.push(tooltip);
         }
     };
@@ -229,8 +227,8 @@
     * removes the given tooltip from the list of tooltips this struct
     * is responsible for
     **/
-    OuterTriggerEventStruct.prototype.removeTooltip = function(tooltip){
-        if(this.containsTooltip(tooltip)){
+    OuterTriggerEventStruct.prototype.removeTooltip = function (tooltip) {
+        if (this.containsTooltip(tooltip)) {
             this._tooltips.splice(this._tooltips.indexOf(tooltip), 1);
         }
     };
@@ -241,7 +239,7 @@
     **/
     Object.defineProperties(OuterTriggerEventStruct.prototype, {
         "numTooltips": {
-            get: function(){
+            get: function () {
                 return this._tooltips.length;
             }
         }
@@ -251,7 +249,7 @@
     *
     * manages a dictionary of event types mapped to OuterTriggerEventStruct objs
     **/
-    function OuterTriggerManager(){
+    function OuterTriggerManager () {
         this.eventStructDict = {};
     }
 
@@ -260,19 +258,17 @@
     * adds a tooltip to the event dictionary and sets it to be handled by the
     * struct for the given type
     **/
-    OuterTriggerManager.prototype.registerTooltip = function(eventType,
-                                                             tooltip)
-    {
+    OuterTriggerManager.prototype.registerTooltip = function (eventType,
+                                                             tooltip) {
         // if event already in dict, just make the existing struct responsible
         // for the tooltip
-        if(eventType in this.eventStructDict){
+        if (eventType in this.eventStructDict) {
             var eventStruct = this.eventStructDict[eventType];
-            if(!eventStruct.containsTooltip(tooltip)){
+            if (!eventStruct.containsTooltip(tooltip)) {
                 eventStruct.addTooltip(tooltip);
             }
-        }
+        } else {
         // if event does not yet exist, set up new struct for it
-        else{
             this.eventStructDict[eventType] =
                 new OuterTriggerEventStruct(eventType);
             this.eventStructDict[eventType].addTooltip(tooltip);
@@ -284,15 +280,13 @@
     * removes a tooltip from the event dictionary and unsets it from being
     * handled by the struct for the given event type
     **/
-    OuterTriggerManager.prototype.unregisterTooltip = function(eventType,
-                                                               tooltip)
-    {
-        if(eventType in this.eventStructDict &&
-           this.eventStructDict[eventType].containsTooltip(tooltip))
-        {
+    OuterTriggerManager.prototype.unregisterTooltip = function (eventType,
+                                                               tooltip) {
+        if (eventType in this.eventStructDict &&
+           this.eventStructDict[eventType].containsTooltip(tooltip)) {
             var eventStruct = this.eventStructDict[eventType];
             eventStruct.removeTooltip(tooltip);
-            if(eventStruct.numTooltips === 0){
+            if (eventStruct.numTooltips === 0) {
                 eventStruct.destroy();
                 delete(this.eventStructDict[eventType]);
             }
@@ -325,11 +319,10 @@
     *                               will be called using said sibling as the
     *                               'this' scope
     **/
-    function _mkPrevSiblingTargetListener(tooltip, eventName, callback){
-        var filteredCallback = function(e){
-            if(callback && hasParentNode(e.target,
-                                         tooltip.previousElementSibling))
-            {
+    function _mkPrevSiblingTargetListener (tooltip, eventName, callback) {
+        var filteredCallback = function (e) {
+            if (callback && hasParentNode(e.target,
+                                         tooltip.previousElementSibling)) {
                 // make sure to change the this binding to be that of the
                 // "delegated" previous sibling element
                 callback.call(tooltip.previousElementSibling, e);
@@ -365,10 +358,10 @@
     *                               will be called using said sibling as the
     *                               'this' scope
     **/
-    function _mkNextSiblingTargetListener(tooltip, eventName, callback){
+    function _mkNextSiblingTargetListener (tooltip, eventName, callback) {
         var eventDelegateStr = eventName+":delegate(x-tooltip+*)";
-        var filteredCallback = function(e){
-            if(callback && this === tooltip.nextElementSibling){
+        var filteredCallback = function (e) {
+            if (callback && this === tooltip.nextElementSibling) {
                 // make sure to change the this binding to be that of the
                 // "delegated" next sibling element
                 callback.call(this, e);
@@ -404,18 +397,16 @@
      *                               will be called using said element as the
      *                               'this' scope
     **/
-    function _getTargetDelegatedListener(tooltip, targetSelector, eventName,
-                                         targetCallback)
-    {
-        if(targetSelector === PREV_SIB_SELECTOR){
+    function _getTargetDelegatedListener (tooltip, targetSelector, eventName,
+                                         targetCallback) {
+        if (targetSelector === PREV_SIB_SELECTOR) {
             return _mkPrevSiblingTargetListener(tooltip, eventName,
                                                targetCallback);
         }
-        else if(targetSelector === NEXT_SIB_SELECTOR){
+        else if (targetSelector === NEXT_SIB_SELECTOR) {
             return _mkNextSiblingTargetListener(tooltip, eventName,
                                                targetCallback);
-        }
-        else{
+        } else {
             var delegateEventStr = eventName+":delegate("+targetSelector+")";
 
             // note that we attach to document.documentElement so that this
@@ -423,11 +414,11 @@
             // document)
             return new CachedListener(
                             document.documentElement, delegateEventStr,
-                            function(e){
+                            function (e) {
                                 var delegatedElem = this;
                                 // filter out elements that are already
                                 // part of the tooltip
-                                if(!hasParentNode(delegatedElem, tooltip)){
+                                if (!hasParentNode(delegatedElem, tooltip)) {
                                     // remember to bind 'this' scope!
                                     targetCallback.call(delegatedElem, e);
                                 }
@@ -449,14 +440,14 @@
         /* the "custom" style provides no default event listener functionality;
          * this is useful if the user wishes to do their own custom triggerstyle
          */
-        "custom": function(tooltip, targetSelector){
+        "custom": function () {
             return [];
         },
         /* the "hover" style allows the tooltip to be shown upon hovering over
          * a targeted element. The tooltip is hidden upon hovering off the
          * target/tooltip
          */
-        "hover": function(tooltip, targetSelector){
+        "hover": function (tooltip, targetSelector) {
             var createdListeners = [];
 
             // need a small delay before hiding a tooltip on hovering off the
@@ -464,8 +455,8 @@
             // tooltip before it is hidden
             var hoverOutTimer = null;
             var hideDelay = 200;
-            var cancelTimerFn = function(){
-                if(hoverOutTimer){
+            var cancelTimerFn = function () {
+                if (hoverOutTimer) {
                     window.clearTimeout(hoverOutTimer);
                 }
                 hoverOutTimer = null;
@@ -474,26 +465,25 @@
             /** set up callbacks for target elements **/
 
             // callback function for when a target element is hovered over
-            var showTipTargetFn = mkIgnoreSubchildrenFn(function(e){
+            var showTipTargetFn = mkIgnoreSubchildrenFn(function (e) {
                 cancelTimerFn();
                 var delegatedElem = this;
                 // don't trigger show when coming from a tooltip element
                 var fromElem = e.relatedTarget || e.toElement;
-                if(!hasParentNode(fromElem, tooltip)){
+                if (!hasParentNode(fromElem, tooltip)) {
                     _showTooltip(tooltip, delegatedElem);
                 }
             });
 
             // callback function for when a target element is hovered off
-            var hideTipTargetFn = mkIgnoreSubchildrenFn(function(e){
+            var hideTipTargetFn = mkIgnoreSubchildrenFn(function (e) {
                 cancelTimerFn();
                 // don't trigger hide when exiting to a tooltip element
                 var toElem = e.relatedTarget || e.toElement;
-                if(!hasParentNode(toElem, tooltip)){
+                if (!hasParentNode(toElem, tooltip)) {
                     // add delay before hide so that we can interact w/ tooltip
-                    hoverOutTimer = window.setTimeout(function(){
-                        if(tooltip.triggerStyle === "hover")
-                        {
+                    hoverOutTimer = window.setTimeout(function () {
+                        if (tooltip.triggerStyle === "hover") {
                             _hideTooltip(tooltip);
                         }
                     }, hideDelay);
@@ -515,32 +505,29 @@
             /** set up callbacks for the tooltip **/
 
             // callback function for when the tooltip itself is hovered over
-            var showTipTooltipFn = mkIgnoreSubchildrenFn(function(e){
+            var showTipTooltipFn = mkIgnoreSubchildrenFn(function (e) {
                 cancelTimerFn();
                 // don't trigger show when coming from the target element
                 var fromElem = e.relatedTarget || e.toElement;
                 var lastTarget = tooltip.xtag.lastTargetElem;
                 // also don't trigger a reshow unless we are actually hidden
                 // (ie: unless the last target is also the CURRENT target
-                if(!tooltip.hasAttribute("visible") &&
-                    lastTarget && !hasParentNode(fromElem, lastTarget))
-                {
+                if (!tooltip.hasAttribute("visible") &&
+                    lastTarget && !hasParentNode(fromElem, lastTarget)) {
                     _showTooltip(tooltip, lastTarget);
                 }
             });
 
             // callback function for when the tooltip itself is hovered off
-            var hideTipTooltipFn = mkIgnoreSubchildrenFn(function(e){
+            var hideTipTooltipFn = mkIgnoreSubchildrenFn(function (e) {
                 cancelTimerFn();
                 // don't get triggered when exiting to the target element
                 var toElem = e.relatedTarget || e.toElement;
                 var lastTarget = tooltip.xtag.lastTargetElem;
-                if(lastTarget && !hasParentNode(toElem, lastTarget))
-                {
+                if (lastTarget && !hasParentNode(toElem, lastTarget)) {
                     // add delay so that we can interact with tooltip
-                    hoverOutTimer = window.setTimeout(function(){
-                        if(tooltip.triggerStyle === "hover")
-                        {
+                    hoverOutTimer = window.setTimeout(function () {
+                        if (tooltip.triggerStyle === "hover") {
                             _hideTooltip(tooltip);
                         }
                     }, hideDelay);
@@ -569,18 +556,18 @@
      (the handlers for dismissing the tooltip on clicking outside it are handled
       by the OUTER_TRIGGER_MANAGER)
     **/
-    function mkGenericListeners(tooltip, targetSelector, eventName){
+    function mkGenericListeners (tooltip, targetSelector, eventName) {
         var createdListeners = [];
 
         // create and add the visibility-toggling click callback on target
         // elements
-        var targetTriggerFn = function(e){
+        var targetTriggerFn = function () {
             var delegatedElem = this;
             tooltip.xtag._skipOuterClick = true;
-            if(tooltip.hasAttribute("visible")){
+            if (tooltip.hasAttribute("visible")) {
                 // case where we are toggling the tooltip off by triggering the
                 // same element that turned it on
-                if(delegatedElem === tooltip.xtag.lastTargetElem){
+                if (delegatedElem === tooltip.xtag.lastTargetElem) {
                     _hideTooltip(tooltip);
                 }
                 // case where we are clicking over to another target of the same
@@ -616,9 +603,9 @@
 
     returns null if no such ancestor is found
     **/
-    function searchAncestors(elem, conditionFn){
-        while(elem){
-            if(conditionFn(elem)){
+    function searchAncestors (elem, conditionFn) {
+        while (elem) {
+            if (conditionFn(elem)) {
                 return elem;
             }
             elem = elem.parentNode;
@@ -631,12 +618,11 @@
     *  utility function that determines if the given element actually has the
     *  proposed parent element as a parent or ancestor node
     **/
-    function hasParentNode(elem, parent){
-        if(parent.contains){
+    function hasParentNode (elem, parent) {
+        if (parent.contains) {
             return parent.contains(elem);
-        }
-        else{
-            var condition = function(el){
+        } else {
+            var condition = function (el) {
                               return el === parent;
                             };
             return !!searchAncestors(elem, condition);
@@ -671,14 +657,13 @@
      *                                  be called with a "this" scope of its
      *                                  containing element
      **/
-    function mkIgnoreSubchildrenFn(callback){
-        return function(e){
+    function mkIgnoreSubchildrenFn (callback) {
+        return function (e) {
             var containerElem = this;
             var relElem = e.relatedTarget || e.toElement;
 
-            if(relElem)
-            {
-                if(!hasParentNode(relElem, containerElem)){
+            if (relElem) {
+                if (!hasParentNode(relElem, containerElem)) {
                     callback.call(this, e);
                 }
             }
@@ -700,29 +685,26 @@
      * If given NEXT_SIB_SELECTOR, returns the next sibling of the tooltip
      * Otherwise, applies the selector as a CSS query selector on the document
      */
-    function _selectorToElems(tooltip, selector){
+    function _selectorToElems (tooltip, selector) {
         var elems = [];
-        if(selector === PREV_SIB_SELECTOR){
+        if (selector === PREV_SIB_SELECTOR) {
             elems = (tooltip.previousElementSibling) ?
                       [tooltip.previousElementSibling] : [];
-        }
-        else if(selector === NEXT_SIB_SELECTOR){
+        } else if (selector === NEXT_SIB_SELECTOR) {
             elems = (tooltip.nextElementSibling) ?
                       [tooltip.nextElementSibling] : [];
-        }
+        } else {
         // otherwise, apply as CSS selector string
-        else{
             elems = xtag.query(document, selector);
         }
 
         // filter out elements that are part of the tooltip itself
         var i = 0;
-        while(i < elems.length){
+        while (i < elems.length) {
             var elem = elems[i];
-            if(hasParentNode(elem, tooltip)){
+            if (hasParentNode(elem, tooltip)) {
                 elems.splice(i, 1);
-            }
-            else{
+            } else {
                 i++;
             }
         }
@@ -734,8 +716,8 @@
     *
     *  returns true if the two given elements' bounding boxes visually overlap
     **/
-    function overlaps(elemA, elemB){
-        var _pointIsInRect = function(x, y, rect){
+    function overlaps (elemA, elemB) {
+        var _pointIsInRect = function (x, y, rect) {
             return (rect.left <= x && x <= rect.right &&
                     rect.top <= y && y <= rect.bottom);
         };
@@ -745,7 +727,7 @@
         var rectB = getRect(elemB);
 
         // checks if any corner of one rect is contained in the other rect
-        var _cornersOverlapBox = function(rectA, rectB){
+        var _cornersOverlapBox = function (rectA, rectB) {
             return (_pointIsInRect(rectA.left, rectA.top, rectB) ||
                     _pointIsInRect(rectA.right, rectA.top, rectB) ||
                     _pointIsInRect(rectA.right, rectA.bottom, rectB) ||
@@ -753,7 +735,7 @@
         };
 
         // checks for cross intersections
-        var _isCrossIntersect = function(rectA, rectB){
+        var _isCrossIntersect = function (rectA, rectB) {
             return (rectA.top <= rectB.top &&
                     rectB.bottom <= rectA.bottom &&
                     rectB.left <= rectA.left &&
@@ -773,7 +755,7 @@
     * given number of degrees
     * see: http://stackoverflow.com/a/9793197 for base inspiration of calc
     **/
-    function getRotationDims(width, height, degrees){
+    function getRotationDims (width, height, degrees) {
         var radians = degrees * (Math.PI / 180);
 
         var rotatedHeight = width * Math.sin(radians) +
@@ -791,7 +773,7 @@
     *
     * simple utility function to constrain a given number to the given range
     **/
-    function constrainNum(num, min, max){
+    function constrainNum (num, min, max) {
         var output = num;
         output = (min !== undefined && min !== null) ?
                         Math.max(min, output) : output;
@@ -805,15 +787,14 @@
     // coordinate system);
     // if oldContext is the window itself, we use the window's viewport as the
     // context, since that's what getBoundingClientRect returns relative to
-    function _coordsRelToNewContext(x, y, oldContext, newContext, contextScale){
+    function _coordsRelToNewContext (x, y, oldContext, newContext, contextScale) {
         // coordinates of the old context element, relative to the window
         // viewport
         var viewportX, viewportY;
-        if(oldContext === window){
+        if (oldContext === window) {
             viewportX = x;
             viewportY = y;
-        }
-        else{
+        } else {
             var oldContextRect = getRect(oldContext);
             viewportX = x - oldContextRect.left;
             viewportY = y - oldContextRect.top;
@@ -839,9 +820,8 @@
         // add in scroll offset if the context is not the body or higher
         // (we don't add scroll if the context is the body because our
         //  getRect calculations were already in relation to the body)
-        if((!hasParentNode(document.body, newContext)) &&
-           hasParentNode(newContext, document.body))
-        {
+        if ((!hasParentNode(document.body, newContext)) &&
+           hasParentNode(newContext, document.body)) {
             translatedCoords.top += scrollTop;
             translatedCoords.left += scrollLeft;
         }
@@ -855,17 +835,19 @@
     minimum left/top and maximum right/bottom coordinates that can contain
     the tooltip
     **/
-    function _getTooltipConstraints(tooltip, contextRect){
-        if(!contextRect){
+    function _getTooltipConstraints (tooltip, contextRect) {
+        if (!contextRect) {
             contextRect = getRect(tooltip.offsetParent || tooltip.parentNode);
         }
         var viewport = getWindowViewport();
         var bounds = viewport;
-        if(!tooltip.allowOverflow){
+        if (!tooltip.allowOverflow) {
             // get the dimensions of the part of the context element that is
             // within the window's viewport
             bounds = getRectIntersection(viewport, contextRect);
-            if(!bounds) bounds = contextRect;
+            if (!bounds) {
+                bounds = contextRect;
+            }
         }
         return bounds;
     }
@@ -877,8 +859,10 @@
     as returned by _autoPositionTooltip; return the name of the best orientation
     for the tooltip, or return null if no orientation was given
     **/
-    function _pickBestTooltipOrient(tooltip, validPositionDataList){
-        if(validPositionDataList.length === 0) return null;
+    function _pickBestTooltipOrient (tooltip, validPositionDataList) {
+        if (validPositionDataList.length === 0) {
+            return null;
+        }
         var bounds = _getTooltipConstraints(tooltip);
 
         var minX = bounds.left;
@@ -890,15 +874,13 @@
         // context's boundaries and those who don't
         var inContextData = [];
         var notInContextData = [];
-        for(var i = 0; i < validPositionDataList.length; i++){
+        for (var i = 0; i < validPositionDataList.length; i++) {
             var data = validPositionDataList[i];
             var rect = data.rect;
-            if(rect.left < minX || rect.top < minY ||
-               rect.right > maxX || rect.bottom > maxY)
-            {
+            if (rect.left < minX || rect.top < minY ||
+               rect.right > maxX || rect.bottom > maxY) {
                 notInContextData.push(data);
-            }
-            else{
+            } else {
                 inContextData.push(data);
             }
         }
@@ -918,16 +900,16 @@
         shrinks its dimensions to avoid stretching the scrollHeight/Width of its
         parent.
     **/
-    function _forceDisplay(elem){
+    function _forceDisplay (elem) {
         elem.setAttribute("_force-display", true);
     }
 
-    function _unforceDisplay(elem){
+    function _unforceDisplay (elem) {
         elem.removeAttribute("_force-display");
     }
 
     // attempts positioning in all directions
-    function _autoPositionTooltip(tooltip, targetElem){
+    function _autoPositionTooltip (tooltip, targetElem) {
         tooltip.removeAttribute(AUTO_ORIENT_ATTR);
         var arrow = tooltip.xtag.arrowEl,
             positionRect = null;
@@ -937,21 +919,20 @@
         // check for the best one after we've run through all directions
         var validOrientDataList = [];
 
-        for(var tmpOrient in TIP_ORIENT_ARROW_DIR_MAP){
+        for (var tmpOrient in TIP_ORIENT_ARROW_DIR_MAP) {
             // ensure arrow is pointing in correct direction
             arrow.setAttribute(ARROW_DIR_ATTR,
                                TIP_ORIENT_ARROW_DIR_MAP[tmpOrient]);
             // recursively attempt a valid positioning
             positionRect = _positionTooltip(tooltip, targetElem,
                                                 tmpOrient);
-            if(!positionRect){
+            if (!positionRect) {
                 continue;
             }
 
             _forceDisplay(tooltip);
             // found a good position, so save data
-            if(!overlaps(tooltip, targetElem))
-            {
+            if (!overlaps(tooltip, targetElem)) {
                 validOrientDataList.push({
                     orient: tmpOrient,
                     rect: positionRect
@@ -961,7 +942,9 @@
         }
         var bestOrient = _pickBestTooltipOrient(tooltip,
                                                 validOrientDataList);
-        if(!bestOrient) bestOrient = "top";
+        if (!bestOrient) {
+            bestOrient = "top";
+        }
         /* set the _auto-orientation attribute so that CSS animations
          * still apply even though orientation attribute is not
          * one of 'top', 'left', 'bottom', or 'right'
@@ -973,7 +956,7 @@
                            TIP_ORIENT_ARROW_DIR_MAP[bestOrient]);
         // if best orient exists and isn't what was the last position
         // attempted, set that position again
-        if(isValidOrientation(bestOrient) && bestOrient !== tmpOrient){
+        if (isValidOrientation(bestOrient) && bestOrient !== tmpOrient) {
             return _positionTooltip(tooltip, targetElem, bestOrient);
         }
         // otherwise return the last rect to be checked
@@ -994,8 +977,8 @@
      * also returns the positioning rectangle of the tooltip, relative to the
      * document
      **/
-    function _positionTooltip(tooltip, targetElem, orientation, reattemptDepth){
-        if((!tooltip.parentNode)){
+    function _positionTooltip (tooltip, targetElem, orientation, reattemptDepth) {
+        if ((!tooltip.parentNode)) {
             tooltip.left = "";
             tooltip.top = "";
             return null;
@@ -1005,7 +988,7 @@
 
         // if not given a valid placement, recursively attempt valid placements
         // until getting something that doesn't overlap the target element
-        if(!(isValidOrientation(orientation))){
+        if (!(isValidOrientation(orientation))) {
             return _autoPositionTooltip(tooltip, targetElem);
         }
 
@@ -1014,7 +997,7 @@
 
         // only position if NOT currently recursing to get a more stable
         // position, or final size will never match up to initial size
-        if(!reattemptDepth){
+        if (!reattemptDepth) {
             tooltip.style.top = "";
             tooltip.style.left = "";
             arrow.style.top = "";
@@ -1067,10 +1050,9 @@
         arrowHeight = arrowDims.height;
         // remember that the arrow is translated halfway to overlap the balloon,
         // so update dimensions accordingly
-        if(orientation === "top" || orientation === "bottom"){
+        if (orientation === "top" || orientation === "bottom") {
             arrowHeight /= 2;
-        }
-        else{
+        } else {
             arrowWidth /= 2;
         }
 
@@ -1092,23 +1074,22 @@
 
         var idealRawLeft = idealTipCenterAlignCoords.left;
         var idealRawTop = idealTipCenterAlignCoords.top;
-        if(orientation === "top"){
+        if (orientation === "top") {
             idealRawTop = targetRect.top - renderedTooltipHeight - arrowHeight;
             maxRawTop -= arrowHeight;
         }
-        else if(orientation === "bottom"){
+        else if (orientation === "bottom") {
             idealRawTop = targetRect.top + targetHeight + arrowHeight;
             maxRawTop -= arrowHeight;
         }
-        else if(orientation === "left"){
+        else if (orientation === "left") {
             idealRawLeft = targetRect.left - renderedTooltipWidth - arrowWidth;
             maxRawLeft -= arrowWidth;
         }
-        else if(orientation === "right"){
+        else if (orientation === "right") {
             idealRawLeft = targetRect.left + targetWidth + arrowWidth;
             maxRawLeft -= arrowWidth;
-        }
-        else{
+        } else {
             throw "invalid orientation " + orientation;
         }
 
@@ -1120,10 +1101,9 @@
         rawLeft += tipPlacementOffsetX;
         rawTop += tipPlacementOffsetY;
 
-        var _isFixed = function(el){
-            if((!window.getComputedStyle) || el === document ||
-                el === document.documentElement)
-            {
+        var _isFixed = function (el) {
+            if ((!window.getComputedStyle) || el === document ||
+                el === document.documentElement) {
                 return false;
             }
 
@@ -1131,7 +1111,7 @@
             try{
                 styles = window.getComputedStyle(el);
             }
-            catch(e){
+            catch(e) {
                 return false;
             }
             return styles && styles.position === "fixed";
@@ -1143,7 +1123,7 @@
         // coord context if the target is in a fixed element and the
         // tooltip is not already in the same element
         var fixedAncestor = searchAncestors(targetElem, _isFixed);
-        if(fixedAncestor && !hasParentNode(tooltip, fixedAncestor)){
+        if (fixedAncestor && !hasParentNode(tooltip, fixedAncestor)) {
             // don't forget to account for the viewport's scroll factors,
             // since the raw coords are in relation to the entire document
             newLeft = rawLeft - viewport.left;
@@ -1173,14 +1153,13 @@
         var rawArrowCenter;
         // the difference between the tooltip and the target positions
         var tipTargetDiff;
-        if(orientation === "top" || orientation === "bottom"){
+        if (orientation === "top" || orientation === "bottom") {
             rawArrowCenter = (targetWidth - arrowWidth)/2;
             tipTargetDiff = targetRect.left - rawLeft;
             maxVal = origTooltipWidth - arrowWidth;
             arrowParentSize = origTooltipWidth;
             arrowStyleProp = "left";
-        }
-        else{
+        } else {
             rawArrowCenter = (targetHeight - arrowHeight)/2;
             tipTargetDiff = targetRect.top - rawTop;
             maxVal = origTooltipHeight - arrowHeight;
@@ -1205,16 +1184,14 @@
         // using the same orientation to try to get a more stable placement
         // in this orientation
         var recursionLimit = 2;
-        if(reattemptDepth < recursionLimit &&
+        if (reattemptDepth < recursionLimit &&
            (origTooltipWidth !== newTooltipWidth ||
             origTooltipHeight !== newTooltipHeight ||
             contextViewWidth !== newContextViewWidth ||
-            contextViewHeight !== newContextViewHeight))
-        {
+            contextViewHeight !== newContextViewHeight)) {
             return _positionTooltip(tooltip, targetElem, orientation,
                                     reattemptDepth+1);
-        }
-        else{
+        } else {
             // return bounding rectangle of finalized position, relative to
             // the document
             return {
@@ -1236,14 +1213,14 @@
      *
      * fires a 'tooltipshown' event
      **/
-    function _showTooltip(tooltip, triggerElem){
-        if(triggerElem === tooltip){
+    function _showTooltip (tooltip, triggerElem) {
+        if (triggerElem === tooltip) {
             console.warn("The tooltip's target element is the tooltip itself!" +
                         " Is this intentional?");
         }
 
         var arrow = tooltip.xtag.arrowEl;
-        if(!arrow.parentNode){
+        if (!arrow.parentNode) {
             console.warn("The inner component DOM of the tooltip "+
                         "appears to be missing. Make sure to edit tooltip"+
                         " contents through the .contentEl property instead of" +
@@ -1253,7 +1230,7 @@
         var targetOrient = tooltip.orientation;
 
         // fire this when preparation for showing the tooltip is complete
-        var _readyToShowFn = function(){
+        var _readyToShowFn = function () {
             _unforceDisplay(tooltip);
             tooltip.setAttribute("visible", true);
             xtag.fireEvent(tooltip, "tooltipshown", {
@@ -1261,16 +1238,15 @@
             });
         };
 
-        if(triggerElem){
+        if (triggerElem) {
             tooltip.xtag.lastTargetElem = triggerElem;
             // fully position tooltip without animation before triggering
             // visibility
-            xtag.skipTransition(tooltip, function(){
+            xtag.skipTransition(tooltip, function () {
                 _positionTooltip(tooltip, triggerElem, targetOrient);
                 return _readyToShowFn;
             });
-        }
-        else{
+        } else {
             tooltip.style.top = "";
             tooltip.style.left = "";
             arrow.style.top = "";
@@ -1286,13 +1262,13 @@
      *
      * fires a 'tooltiphidden' event
      **/
-    function _hideTooltip(tooltip){
+    function _hideTooltip (tooltip) {
         // remove remnant attribute used for auto placement animations
-        if(isValidOrientation(tooltip.orientation)){
+        if (isValidOrientation(tooltip.orientation)) {
             tooltip.removeAttribute(AUTO_ORIENT_ATTR);
         }
 
-        if(tooltip.hasAttribute("visible")){
+        if (tooltip.hasAttribute("visible")) {
             // force display until transition is done to allow fade out
             // animation
             _forceDisplay(tooltip);
@@ -1305,9 +1281,9 @@
 
     removes all cached triggering listeners on the given tooltip
     **/
-    function _destroyListeners(tooltip){
+    function _destroyListeners (tooltip) {
         var cachedListeners = tooltip.xtag.cachedListeners;
-        cachedListeners.forEach(function(cachedListener){
+        cachedListeners.forEach(function (cachedListener) {
             cachedListener.removeListener();
         });
         tooltip.xtag.cachedListeners = [];
@@ -1321,25 +1297,24 @@
      * if newTargetSelector is not given, uses previously existing selector
      * if newTriggerStyle is not given, uses the previously used trigger style
     **/
-    function _updateTriggerListeners(tooltip, newTargetSelector,
-                                     newTriggerStyle)
-    {
+    function _updateTriggerListeners (tooltip, newTargetSelector,
+                                     newTriggerStyle) {
         // dont update listeners if tooltip is not yet actually in the document
-        if(!tooltip.parentNode){
+        if (!tooltip.parentNode) {
             return;
         }
 
-        if(newTargetSelector === undefined || newTargetSelector === null){
+        if (newTargetSelector === undefined || newTargetSelector === null) {
             newTargetSelector = tooltip.targetSelector;
         }
-        if(newTriggerStyle === undefined || newTriggerStyle === null){
+        if (newTriggerStyle === undefined || newTriggerStyle === null) {
             newTriggerStyle = tooltip.triggerStyle;
         }
 
         var newTriggerElems = _selectorToElems(tooltip, newTargetSelector);
         // if we are actually changing the triggering elements, but are losing
         // our last target elem, default to first one in the list
-        if(newTriggerElems.indexOf(tooltip.xtag.lastTargetElem) === -1){
+        if (newTriggerElems.indexOf(tooltip.xtag.lastTargetElem) === -1) {
             tooltip.xtag.lastTargetElem = (newTriggerElems.length > 0) ?
                                            newTriggerElems[0] : null;
             // reposition tooltip
@@ -1352,17 +1327,16 @@
 
         // get new event listeners that we'll need to attach
         var listeners;
-        if(newTriggerStyle in PRESET_STYLE_LISTENERFNS){
+        if (newTriggerStyle in PRESET_STYLE_LISTENERFNS) {
             var getListenersFn = PRESET_STYLE_LISTENERFNS[newTriggerStyle];
             listeners = getListenersFn(tooltip, newTargetSelector);
-        }
-        else{
+        } else {
             listeners = mkGenericListeners(tooltip, newTargetSelector,
                                            newTriggerStyle);
             OUTER_TRIGGER_MANAGER.registerTooltip(newTriggerStyle, tooltip);
         }
         // actually attach the listener functions
-        listeners.forEach(function(listener){
+        listeners.forEach(function (listener) {
             listener.attachListener();
         });
         tooltip.xtag.cachedListeners = listeners;
@@ -1374,7 +1348,7 @@
 
     xtag.register("x-tooltip", {
         lifecycle:{
-            created: function(){
+            created: function () {
                 var self = this;
                 // create content elements (allows user to style separately)
                 self.xtag.contentEl = document.createElement("div");
@@ -1415,22 +1389,21 @@
                 // outer click from catching it as well)
                 self.xtag._skipOuterClick = false;
             },
-            inserted: function(){
+            inserted: function () {
                 _updateTriggerListeners(this, this.xtag._targetSelector,
                                         this.xtag._triggerStyle);
             },
-            removed: function(){
+            removed: function () {
                 _destroyListeners(this);
             }
         },
         events: {
             // tooltipshown and tooltiphidden are fired manually
-            "transitionend": function(e){
+            "transitionend": function (e) {
                 var tooltip = e.currentTarget;
 
-                if(tooltip.xtag._hideTransitionFlag &&
-                   !tooltip.hasAttribute("visible"))
-                {
+                if (tooltip.xtag._hideTransitionFlag &&
+                   !tooltip.hasAttribute("visible")) {
                     tooltip.xtag._hideTransitionFlag = false;
                     xtag.fireEvent(tooltip, "tooltiphidden");
                 }
@@ -1442,22 +1415,21 @@
             // sets the placement of the tooltip in relation to a target element
             "orientation":{
                 attribute: {},
-                get: function(){
+                get: function () {
                     return this.xtag._orientation;
                 },
                 // when orientation of tooltip is set, also set direction of
                 // arrow pointer
-                set: function(newOrientation){
+                set: function (newOrientation) {
                     newOrientation = newOrientation.toLowerCase();
                     var arrow = this.querySelector(".tooltip-arrow");
 
                     var newArrowDir = null;
-                    if(isValidOrientation(newOrientation)){
+                    if (isValidOrientation(newOrientation)) {
                         newArrowDir = TIP_ORIENT_ARROW_DIR_MAP[newOrientation];
                         arrow.setAttribute(ARROW_DIR_ATTR, newArrowDir);
                         this.removeAttribute(AUTO_ORIENT_ATTR);
-                    }
-                    else{
+                    } else {
                         // when auto placing, we will determine arrow direction
                         // when shown
                         arrow.removeAttribute(ARROW_DIR_ATTR);
@@ -1474,10 +1446,10 @@
             // custom trigger
             "triggerStyle": {
                 attribute: {name: "trigger-style"},
-                get: function(){
+                get: function () {
                     return this.xtag._triggerStyle;
                 },
-                set: function(newTriggerStyle){
+                set: function (newTriggerStyle) {
                     _updateTriggerListeners(this, this.targetSelector,
                                             newTriggerStyle);
                     this.xtag._triggerStyle = newTriggerStyle;
@@ -1488,14 +1460,10 @@
             // ie: can only select tooltip's siblings or deeper in the DOM tree
             "targetSelector": {
                 attribute: {name: "target-selector"},
-                get: function(){
+                get: function () {
                     return this.xtag._targetSelector;
                 },
-                set: function(newSelector){
-                    // filter out selected elements that are
-                    // themselves in the tooltip
-                    var newTriggerElems = _selectorToElems(this, newSelector);
-
+                set: function (newSelector) {
                     _updateTriggerListeners(this, newSelector,
                                             this.triggerStyle);
                     this.xtag._targetSelector = newSelector;
@@ -1524,18 +1492,18 @@
                     boolean: true,
                     name: "allow-overflow"
                 },
-                set: function(allowsOverflow){
+                set: function () {
                     this.refreshPosition();
                 }
             },
 
             // the DOM element representing the content of the tooltip
             "contentEl": {
-                get: function(){
+                get: function () {
                     return this.xtag.contentEl;
                 },
                 // can use this to replace the DOM outright
-                set: function(newContentElem){
+                set: function (newContentElem) {
                     var oldContent = this.xtag.contentEl;
 
                     xtag.addClass(newContentElem, "tooltip-content");
@@ -1549,9 +1517,9 @@
 
             // return a list of the preset trigger style names
             "presetTriggerStyles": {
-                get: function(){
+                get: function () {
                     var output = [];
-                    for(var presetName in PRESET_STYLE_LISTENERFNS){
+                    for (var presetName in PRESET_STYLE_LISTENERFNS) {
                         output.push(presetName);
                     }
                     return output;
@@ -1561,7 +1529,7 @@
             // return a list of elements currently selected by the tooltip's
             // selector
             "targetElems":{
-                get: function(){
+                get: function () {
                     return _selectorToElems(this, this.targetSelector);
                 }
             }
@@ -1569,30 +1537,29 @@
         methods: {
             // called when the position of the tooltip needs to be manually
             // recalculated; such as after updating the DOM of the contents
-            refreshPosition: function(){
-                if(this.xtag.lastTargetElem){
+            refreshPosition: function () {
+                if (this.xtag.lastTargetElem) {
                     _positionTooltip(this, this.xtag.lastTargetElem,
                                      this.orientation);
                 }
             },
 
             // exactly as you'd expect; shows the tooltip
-            show: function(){
+            show: function () {
                 _showTooltip(this, this.xtag.lastTargetElem);
             },
 
             // exactly as you'd expect; hides the tooltip
-            hide: function(){
+            hide: function () {
                 _hideTooltip(this);
             },
 
             // exactly as you'd expect; toggles between showing and hiding the
             // tooltip
-            toggle: function(){
-                if(this.hasAttribute("visible")){
+            toggle: function () {
+                if (this.hasAttribute("visible")) {
                     this.hide();
-                }
-                else{
+                } else {
                     this.show();
                 }
             }
