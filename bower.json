@@ -1,7 +1,7 @@
 {
   "name": "x-tag-tooltip",
   "description": "Content callout that appears in current context to point at an element and is associated with a triggering element and interaction-style in the underlying content",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "keywords": [
     "web-components",
     "button",
